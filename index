@@ -27,7 +27,7 @@
 </html>
 
 <script>
-    const apiKey = "YOUR_VALID_API_KEY";
+    const apiKey = "2ae43de5bb60e0218feee94c5cd93c82";
     const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_status=active&arr_iata=GRU`;
 
     // Fetch and use the API
