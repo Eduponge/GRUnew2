@@ -1,0 +1,61 @@
+document.addEventListener("DOMContentLoaded", async () => {
+    const apiUrl = "https://api.aviationstack.com/v1/flights?access_key=YOUR_API_KEY&flight_status=active&arr_iata=GRU";
+
+    try {
+        // Fetch data from the API
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        // Check if data is valid
+        if (!data.data || data.data.length === 0) {
+            console.error("No flights found.");
+            return;
+        }
+
+        const tableBody = document.querySelector("#flightTable tbody");
+
+        let delays = data.data.map(flight => {
+            const scheduledTime = new Date(flight.arrival.scheduled).getTime();
+            const estimatedTime = new Date(flight.arrival.estimated).getTime();
+            const delayMinutes = (estimatedTime - scheduledTime) / (1000 * 60);
+
+            return {
+                airline: flight.airline.name,
+                flightNumber: flight.flight.iata,
+                origin: flight.departure.airport,
+                scheduledArrival: new Date(flight.arrival.scheduled).toLocaleString(),
+                estimatedArrival: new Date(flight.arrival.estimated).toLocaleString(),
+                delay: delayMinutes
+            };
+        });
+
+        // Sort and display top 5 early and late flights
+        const topEarly = [...delays].sort((a, b) => a.delay - b.delay).slice(0, 5);
+        const topLate = [...delays].sort((a, b) => b.delay - a.delay).slice(0, 5);
+
+        function populateTable(data, title) {
+            const section = document.createElement("h2");
+            section.textContent = title;
+            document.body.appendChild(section);
+
+            data.forEach(flight => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${flight.airline}</td>
+                    <td>${flight.flightNumber}</td>
+                    <td>${flight.origin}</td>
+                    <td>${flight.scheduledArrival}</td>
+                    <td>${flight.estimatedArrival}</td>
+                    <td>${flight.delay.toFixed(2)} min</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        populateTable(topEarly, "Top 5 Early Flights");
+        populateTable(topLate, "Top 5 Late Flights");
+
+    } catch (error) {
+        console.error("Error fetching API data:", error);
+    }
+});
