@@ -1,64 +1,62 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voos em Guarulhos</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <h1>Voos Ativos no Aeroporto de Guarulhos</h1>
-    <table id="flightTable">
-        <thead>
-            <tr>
-                <th>Aeronave</th>
-                <th>Companhia</th>
-                <th>Número do voo</th>
-                <th>Origem</th>
-                <th>Partida</th>
-                <th>Chegada estimada</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <script src="script.js"></script>
-</body>
-</html>
+document.addEventListener("DOMContentLoaded", async () => {
+    const apiUrl = "https://api.aviationstack.com/v1/flights?access_key=2ae43de5bb60e0218feee94c5cd93c82&flight_status=active&arr_iata=GRU";
 
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-}
+    try {
+        // Faz a chamada à API
+        const response = await fetch(apiUrl);
+        const data = await response.json();
 
-table {
-    width: 80%;
-    margin: auto;
-    border-collapse: collapse;
-}
+        // Verifica se há dados válidos
+        if (!data.data || data.data.length === 0) {
+            console.error("Nenhum voo encontrado.");
+            return;
+        }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
+        const tableBody = document.querySelector("#flightTable tbody");
 
-th {
-    background-color: #007bff;
-    color: white;
-}
-document.addEventListener("DOMContentLoaded", () => {
-    const flightData = JSON.parse(`YOUR_JSON_DATA_HERE`);
-    const tableBody = document.querySelector("#flightTable tbody");
+        let delays = data.data.map(flight => {
+            const scheduledTime = new Date(flight.arrival.scheduled).getTime();
+            const estimatedTime = new Date(flight.arrival.estimated).getTime();
+            const delayMinutes = (estimatedTime - scheduledTime) / (1000 * 60);
 
-    flightData.data.forEach(flight => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${flight.aircraft ? flight.aircraft.iata : "N/A"}</td>
-            <td>${flight.airline.name}</td>
-            <td>${flight.flight.iata}</td>
-            <td>${flight.departure.airport}</td>
-            <td>${new Date(flight.departure.actual).toLocaleString()}</td>
-            <td>${new Date(flight.arrival.estimated).toLocaleString()}</td>
-        `;
-        tableBody.appendChild(row);
-    });
+            return {
+                airline: flight.airline.name,
+                flightNumber: flight.flight.iata,
+                origin: flight.departure.airport,
+                scheduledArrival: new Date(flight.arrival.scheduled).toLocaleString(),
+                estimatedArrival: new Date(flight.arrival.estimated).toLocaleString(),
+                delay: delayMinutes
+            };
+        });
+
+        // Ordenação dos voos
+        const topEarly = [...delays].sort((a, b) => a.delay - b.delay).slice(0, 5);
+        const topLate = [...delays].sort((a, b) => b.delay - a.delay).slice(0, 5);
+
+        // Função para adicionar os voos na tabela
+        function populateTable(data, title) {
+            const section = document.createElement("h2");
+            section.textContent = title;
+            document.body.appendChild(section);
+
+            data.forEach(flight => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${flight.airline}</td>
+                    <td>${flight.flightNumber}</td>
+                    <td>${flight.origin}</td>
+                    <td>${flight.scheduledArrival}</td>
+                    <td>${flight.estimatedArrival}</td>
+                    <td>${flight.delay.toFixed(2)} min</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        populateTable(topEarly, "Top 5 Voos Adiantados");
+        populateTable(topLate, "Top 5 Voos Atrasados");
+        
+    } catch (error) {
+        console.error("Erro ao buscar dados da API:", error);
+    }
 });
