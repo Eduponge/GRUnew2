@@ -1,4 +1,4 @@
-const apiKey = "2ae43de5bb60e0218feee94c5cd93c82"; // Replace with a secure method for storing API keys
+const apiKey = 72b8b16322c652134824b49732f3be24; // Replace with a secure method for storing API keys
 const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_status=active&arr_iata=GRU`;
 
 // Fetch data and update the table
