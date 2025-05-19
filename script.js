@@ -4,7 +4,32 @@ const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&fl
 fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
-    const flights = data.data || [];
+    let flights = data.data || [];
+
+    // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
+    flights = flights.map(flight => {
+      const scheduledArrival = flight.arrival?.scheduled;
+      const estimatedArrival = flight.arrival?.estimated;
+
+      let delayMinutes = null;
+      if (scheduledArrival && estimatedArrival) {
+        const scheduledDate = new Date(scheduledArrival);
+        const estimatedDate = new Date(estimatedArrival);
+        // diferença em minutos
+        delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
+      }
+      return { ...flight, delayMinutes };
+    });
+
+    // Ordena do maior delay para o menor
+    flights.sort((a, b) => {
+      // Se algum for null/undefined, joga para o final
+      if (b.delayMinutes == null && a.delayMinutes == null) return 0;
+      if (b.delayMinutes == null) return -1;
+      if (a.delayMinutes == null) return 1;
+      return b.delayMinutes - a.delayMinutes;
+    });
+
     const tbody = document.querySelector("#flightTable tbody");
     tbody.innerHTML = "";
 
@@ -14,7 +39,7 @@ fetch(apiUrl)
       const origin = flight.departure?.iata || "";
       const scheduledArrival = flight.arrival?.scheduled || "";
       const estimatedArrival = flight.arrival?.estimated || "";
-      const delay = flight.arrival?.delay || 0;
+      const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
 
       const row = document.createElement("tr");
       row.innerHTML = `
