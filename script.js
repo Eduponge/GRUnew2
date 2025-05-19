@@ -6,16 +6,17 @@ fetch(apiUrl)
   .then(data => {
     let flights = data.data || [];
 
+    // FILTRA VOOS QUE NÃO SÃO CODESHARE
+    flights = flights.filter(flight => !flight.codeshared);
+
     // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
-
       let delayMinutes = null;
       if (scheduledArrival && estimatedArrival) {
         const scheduledDate = new Date(scheduledArrival);
         const estimatedDate = new Date(estimatedArrival);
-        // diferença em minutos
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
       }
       return { ...flight, delayMinutes };
@@ -23,7 +24,6 @@ fetch(apiUrl)
 
     // Ordena do maior delay para o menor
     flights.sort((a, b) => {
-      // Se algum for null/undefined, joga para o final
       if (b.delayMinutes == null && a.delayMinutes == null) return 0;
       if (b.delayMinutes == null) return -1;
       if (a.delayMinutes == null) return 1;
