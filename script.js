@@ -1,4 +1,4 @@
-const apiKey = "72b8b16322c652134824b49732f3be24";
+const apiKey = "f7cc9bafb7216fcd501a59db4a9ca430";
 const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&flight_status=active&arr_iata=GRU`;
 
 fetch(apiUrl)
