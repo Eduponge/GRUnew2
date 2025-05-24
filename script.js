@@ -16,7 +16,7 @@ function getDelayCategoryCustom(delay) {
 document.addEventListener("DOMContentLoaded", () => {
   // Título principal
   const h1 = document.querySelector("h1");
-  if (h1) h1.textContent = "Horário ETA atualizados";
+  if (h1) h1.textContent = "Horários ETA atualizados";
 
   // Cabeçalho da tabela
   const ths = document.querySelectorAll("#flightTable thead th");
