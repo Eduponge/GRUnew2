@@ -65,6 +65,16 @@ fetch(apiUrl)
       const estimatedArrival = arrival?.estimated || "";
       const delay = delayMinutes != null ? delayMinutes : "";
 
+      // Define a classe de bin para cor
+      const binClass =
+        delayCategory === "Acima de 21" ? "bin-acima21" :
+        delayCategory === "Entre 20 e 10" ? "bin-20-10" :
+        delayCategory === "Entre 9 e 0" ? "bin-9-0" :
+        delayCategory === "Entre -1 e -10" ? "bin--1--10" :
+        delayCategory === "Entre -11 e -20" ? "bin--11--20" :
+        delayCategory === "Menor de -20" ? "bin-menor20" :
+        "bin-seminfo";
+
       // Adicione o cabeçalho de grupo se a categoria mudou
       if (delayCategory !== lastCategory) {
         const headerRow = document.createElement("tr");
@@ -81,16 +91,8 @@ fetch(apiUrl)
       }
 
       const row = document.createElement("tr");
-      // Adicione classes de bin para manter as cores
-      row.className = "bin-" + (
-        delayCategory === "Acima de 21" ? "acima21" :
-        delayCategory === "Entre 20 e 10" ? "20-10" :
-        delayCategory === "Entre 9 e 0" ? "9-0" :
-        delayCategory === "Entre -1 e -10" ? "--1--10" :
-        delayCategory === "Entre -11 e -20" ? "--11--20" :
-        delayCategory === "Menor de -20" ? "menor20" :
-        "seminfo"
-      );
+      row.className = binClass;
+
       row.innerHTML = `
         <td class="delay-category">${delayCategory}</td>
         <td>${airline?.name || ""}</td>
@@ -98,7 +100,7 @@ fetch(apiUrl)
         <td>${origin}</td>
         <td>${scheduledArrival}</td>
         <td>${estimatedArrival}</td>
-        <td>${delay}</td>
+        <td class="${binClass}">${delay}</td>
       `;
       tbody.appendChild(row);
     });
