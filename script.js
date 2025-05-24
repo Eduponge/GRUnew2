@@ -12,6 +12,25 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
+// Atualiza os títulos da tabela e da página
+document.addEventListener("DOMContentLoaded", () => {
+  // Título principal
+  const h1 = document.querySelector("h1");
+  if (h1) h1.textContent = "Horário ETA atualizados";
+
+  // Cabeçalho da tabela
+  const ths = document.querySelectorAll("#flightTable thead th");
+  if (ths.length === 7) {
+    ths[0].textContent = "Categoria";
+    ths[1].textContent = "Companhia";
+    ths[2].textContent = "Número Voo";
+    ths[3].textContent = "Origem";
+    ths[4].textContent = "STA";
+    ths[5].textContent = "ETA";
+    ths[6].textContent = "Atraso/Adiantamento (min)";
+  }
+});
+
 fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
