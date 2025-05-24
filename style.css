@@ -40,6 +40,13 @@ tr.bin--11--20 td.delay-category { background-color: #4fc3f7; color: #fff; }
 tr.bin-menor20 td.delay-category { background-color: #9575cd; color: #fff; }
 tr.bin-seminfo td.delay-category { background-color: #bdbdbd; color: #333; }
 
+tr.delay-header td {
+    background: #e0e0e0;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.1em;
+}
+
 .legend {
     margin-top: 30px;
     max-width: 400px;
