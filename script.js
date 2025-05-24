@@ -13,7 +13,7 @@ function getDelayCategory(delay) {
   return "Sem info";
 }
 
-// Ajuste para bins exatamente como você pediu:
+// Ajuste para bins:
 function getDelayCategoryCustom(delay) {
   if (delay == null) return "Sem info";
   if (delay > 21) return "Acima de 21";
