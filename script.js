@@ -1,19 +1,6 @@
 const apiKey = "f7cc9bafb7216fcd501a59db4a9ca430";
 const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&arr_iata=GRU&flight_status=active`;
 
-function getDelayCategory(delay) {
-  if (delay == null) return "Sem info";
-  if (delay > 21) return "Acima de 21";
-  if (delay >= 20 && delay <= 21) return "Entre 20 e 21";
-  if (delay >= 10 && delay < 20) return "Entre 10 e 19";
-  if (delay >= 0 && delay < 10) return "Entre 0 e 9";
-  if (delay >= -10 && delay < 0) return "Entre -1 e -10";
-  if (delay >= -20 && delay < -10) return "Entre -11 e -20";
-  if (delay < -20) return "Menor de -20";
-  return "Sem info";
-}
-
-// Ajuste para bins:
 function getDelayCategoryCustom(delay) {
   if (delay == null) return "Sem info";
   if (delay > 21) return "Acima de 21";
@@ -67,24 +54,51 @@ fetch(apiUrl)
     const tbody = document.querySelector("#flightTable tbody");
     tbody.innerHTML = "";
 
+    let lastCategory = null;
     flights.forEach(flight => {
-      const airline = flight.airline?.name || "";
-      const flightNumber = flight.flight?.number || "";
-      const origin = flight.departure?.iata || "";
-      const scheduledArrival = flight.arrival?.scheduled || "";
-      const estimatedArrival = flight.arrival?.estimated || "";
-      const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
-      const delayCategory = flight.delayCategory;
+      const {
+        airline, flight: flightData, departure, arrival, delayMinutes, delayCategory
+      } = flight;
+      const flightNumber = flightData?.number || "";
+      const origin = departure?.iata || "";
+      const scheduledArrival = arrival?.scheduled || "";
+      const estimatedArrival = arrival?.estimated || "";
+      const delay = delayMinutes != null ? delayMinutes : "";
+
+      // Adicione o cabeçalho de grupo se a categoria mudou
+      if (delayCategory !== lastCategory) {
+        const headerRow = document.createElement("tr");
+        headerRow.className = "delay-header";
+        const headerCell = document.createElement("td");
+        headerCell.colSpan = 7;
+        headerCell.innerHTML = `<strong>${delayCategory}</strong>`;
+        headerCell.style.background = "#e0e0e0";
+        headerCell.style.textAlign = "center";
+        headerCell.style.fontSize = "1.1em";
+        headerRow.appendChild(headerCell);
+        tbody.appendChild(headerRow);
+        lastCategory = delayCategory;
+      }
 
       const row = document.createElement("tr");
+      // Adicione classes de bin para manter as cores
+      row.className = "bin-" + (
+        delayCategory === "Acima de 21" ? "acima21" :
+        delayCategory === "Entre 20 e 10" ? "20-10" :
+        delayCategory === "Entre 9 e 0" ? "9-0" :
+        delayCategory === "Entre -1 e -10" ? "--1--10" :
+        delayCategory === "Entre -11 e -20" ? "--11--20" :
+        delayCategory === "Menor de -20" ? "menor20" :
+        "seminfo"
+      );
       row.innerHTML = `
-        <td>${airline}</td>
+        <td class="delay-category">${delayCategory}</td>
+        <td>${airline?.name || ""}</td>
         <td>${flightNumber}</td>
         <td>${origin}</td>
         <td>${scheduledArrival}</td>
         <td>${estimatedArrival}</td>
         <td>${delay}</td>
-        <td>${delayCategory}</td>
       `;
       tbody.appendChild(row);
     });
