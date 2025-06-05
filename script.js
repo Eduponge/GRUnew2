@@ -1,5 +1,5 @@
-const apiKey = "f7cc9bafb7216fcd501a59db4a9ca430";
-const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&arr_iata=GRU&flight_status=active`;
+const apiKey = "u08IR2ZC8GsXGxzNjhzgOeEZS9jgINGC";
+const apiUrl = "https://aeroapi.flightaware.com/aeroapi/airports/SBGR/flights";
 
 function getDelayCategoryCustom(delay) {
   if (delay == null) return "Sem info";
@@ -12,44 +12,76 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
+// Função para converter e formatar a hora, adicionando 3 horas
+function formatTime(str) {
+  if (!str) return "";
+  // Remove 'T' e 'Z' e adiciona 3 horas
+  try {
+    const date = new Date(str.replace("T", " ").replace("Z", ""));
+    // Somar 3 horas no fuso
+    date.setHours(date.getHours() + 3);
+    // Retorna no formato YYYY-MM-DD HH:mm
+    return date.toISOString().replace("T", " ").substring(0, 16);
+  } catch {
+    return str;
+  }
+}
+
 // Atualiza os títulos da tabela e da página
 document.addEventListener("DOMContentLoaded", () => {
-  // Título principal
-  const h1 = document.querySelector("h1");
-  if (h1) h1.textContent = "Horários ETA atualizados";
-
-  // Cabeçalho da tabela
-  const ths = document.querySelectorAll("#flightTable thead th");
-  if (ths.length === 7) {
-    ths[0].textContent = "Categoria";
-    ths[1].textContent = "Companhia";
-    ths[2].textContent = "Número Voo";
-    ths[3].textContent = "Origem";
-    ths[4].textContent = "STA";
-    ths[5].textContent = "ETA";
-    ths[6].textContent = "Atraso/Adiantamento (min)";
-  }
+  // Já está tudo em português e ajustado no HTML
 });
 
-fetch(apiUrl)
+fetch(apiUrl, {
+  headers: {
+    "Accept": "application/json; charset=UTF-8",
+    "x-apikey": apiKey
+  }
+})
   .then(response => response.json())
   .then(data => {
-    let flights = data.data || [];
+    let flights = data.flights || [];
 
-    // FILTRA VOOS QUE NÃO SÃO CODESHARE
-    flights = flights.filter(flight => !flight.codeshared);
+    // FILTRA APENAS CHEGADAS (inbound)
+    flights = flights.filter(flight => flight.direction === "inbound");
 
-    // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
+    // Mapear e calcular atraso
     flights = flights.map(flight => {
-      const scheduledArrival = flight.arrival?.scheduled;
-      const estimatedArrival = flight.arrival?.estimated;
+      const airline = flight.operator_icao || "";
+      const flightNumber = flight.ident_iata || "";
+      const registration = flight.registration || "";
+      const origin = flight.origin?.ident_iata || "";
+      const scheduledArrival = flight.scheduled_in || "";
+      const estimatedArrival = flight.estimated_in || "";
+
+      // Formatando data e hora
+      const formattedSTA = formatTime(scheduledArrival);
+      const formattedETA = formatTime(estimatedArrival);
+
+      // Calculando atraso em minutos (ETA - STA)
       let delayMinutes = null;
       if (scheduledArrival && estimatedArrival) {
-        const scheduledDate = new Date(scheduledArrival);
-        const estimatedDate = new Date(estimatedArrival);
-        delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
+        try {
+          const staDate = new Date(scheduledArrival);
+          const etaDate = new Date(estimatedArrival);
+          staDate.setHours(staDate.getHours() + 3);
+          etaDate.setHours(etaDate.getHours() + 3);
+          delayMinutes = Math.round((etaDate - staDate) / 60000);
+        } catch {
+          delayMinutes = null;
+        }
       }
-      return { ...flight, delayMinutes, delayCategory: getDelayCategoryCustom(delayMinutes) };
+
+      return {
+        airline,
+        flightNumber,
+        registration,
+        origin,
+        scheduledArrival: formattedSTA,
+        estimatedArrival: formattedETA,
+        delayMinutes,
+        delayCategory: getDelayCategoryCustom(delayMinutes)
+      };
     });
 
     // Ordena por categoria do delay conforme a ordem dos bins
@@ -76,13 +108,9 @@ fetch(apiUrl)
     let lastCategory = null;
     flights.forEach(flight => {
       const {
-        airline, flight: flightData, departure, arrival, delayMinutes, delayCategory
+        airline, flightNumber, registration, origin,
+        scheduledArrival, estimatedArrival, delayMinutes, delayCategory
       } = flight;
-      const flightNumber = flightData?.number || "";
-      const origin = departure?.iata || "";
-      const scheduledArrival = arrival?.scheduled || "";
-      const estimatedArrival = arrival?.estimated || "";
-      const delay = delayMinutes != null ? delayMinutes : "";
 
       // Define a classe de bin para cor
       const binClass =
@@ -94,12 +122,12 @@ fetch(apiUrl)
         delayCategory === "Menor de -20" ? "bin-menor20" :
         "bin-seminfo";
 
-      // Adicione o cabeçalho de grupo se a categoria mudou
+      // Adiciona o cabeçalho de grupo se a categoria mudou
       if (delayCategory !== lastCategory) {
         const headerRow = document.createElement("tr");
         headerRow.className = "delay-header";
         const headerCell = document.createElement("td");
-        headerCell.colSpan = 7;
+        headerCell.colSpan = 8;
         headerCell.innerHTML = `<strong>${delayCategory}</strong>`;
         headerCell.style.background = "#e0e0e0";
         headerCell.style.textAlign = "center";
@@ -114,18 +142,19 @@ fetch(apiUrl)
 
       row.innerHTML = `
         <td class="delay-category">${delayCategory}</td>
-        <td>${airline?.name || ""}</td>
+        <td>${airline}</td>
         <td>${flightNumber}</td>
+        <td>${registration}</td>
         <td>${origin}</td>
         <td>${scheduledArrival}</td>
         <td>${estimatedArrival}</td>
-        <td class="${binClass}">${delay}</td>
+        <td class="${binClass}">${delayMinutes != null ? delayMinutes : ""}</td>
       `;
       tbody.appendChild(row);
     });
   })
   .catch(error => {
     const tbody = document.querySelector("#flightTable tbody");
-    tbody.innerHTML = `<tr><td colspan="7">Erro ao obter dados: ${error}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8">Erro ao obter dados: ${error}</td></tr>`;
     console.error("Error fetching flight data:", error);
   });
