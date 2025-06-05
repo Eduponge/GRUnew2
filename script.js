@@ -11,12 +11,13 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
-// Função para converter e formatar a hora, adicionando 3 horas
+// Formata o horário removendo 'T' e 'Z' e adicionando 3 horas
 function formatTime(str) {
   if (!str) return "";
   try {
     const date = new Date(str.replace("T", " ").replace("Z", ""));
     date.setHours(date.getHours() + 3);
+    // yyyy-mm-dd hh:mm
     return date.toISOString().replace("T", " ").substring(0, 16);
   } catch {
     return str;
@@ -24,7 +25,6 @@ function formatTime(str) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Títulos já estão ajustados no HTML
   fetch(apiUrl)
     .then(response => response.json())
     .then(data => {
@@ -68,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const categoryOrder = [
-        "Acima de 21", "Entre 20 e 10", "Entre 9 e 0", "Entre -1 e -10", "Entre -11 e -20", "Menor de -20", "Sem info"
+        "Acima de 21", "Entre 20 e 10", "Entre 9 e 0", "Entre -1 e -10",
+        "Entre -11 e -20", "Menor de -20", "Sem info"
       ];
       flights.sort((a, b) => {
         const idxA = categoryOrder.indexOf(a.delayCategory);
@@ -112,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const row = document.createElement("tr");
         row.className = binClass;
-
         row.innerHTML = `
           <td class="delay-category">${delayCategory}</td>
           <td>${airline}</td>
