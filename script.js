@@ -1,5 +1,4 @@
-const apiKey = "u08IR2ZC8GsXGxzNjhzgOeEZS9jgINGC";
-const apiUrl = "https://aeroapi.flightaware.com/aeroapi/airports/SBGR/flights";
+const apiUrl = "https://v0-new-project-wndpayl978c.vercel.app/flights";
 
 function getDelayCategoryCustom(delay) {
   if (delay == null) return "Sem info";
@@ -15,37 +14,21 @@ function getDelayCategoryCustom(delay) {
 // Função para converter e formatar a hora, adicionando 3 horas
 function formatTime(str) {
   if (!str) return "";
-  // Remove 'T' e 'Z' e adiciona 3 horas
   try {
     const date = new Date(str.replace("T", " ").replace("Z", ""));
-    // Somar 3 horas no fuso
     date.setHours(date.getHours() + 3);
-    // Retorna no formato YYYY-MM-DD HH:mm
     return date.toISOString().replace("T", " ").substring(0, 16);
   } catch {
     return str;
   }
 }
 
-// Atualiza os títulos da tabela e da página
-document.addEventListener("DOMContentLoaded", () => {
-  // Já está tudo em português e ajustado no HTML
-});
-
-fetch(apiUrl, {
-  headers: {
-    "Accept": "application/json; charset=UTF-8",
-    "x-apikey": apiKey
-  }
-})
+fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.flights || [];
-
-    // FILTRA APENAS CHEGADAS (inbound)
     flights = flights.filter(flight => flight.direction === "inbound");
 
-    // Mapear e calcular atraso
     flights = flights.map(flight => {
       const airline = flight.operator_icao || "";
       const flightNumber = flight.ident_iata || "";
@@ -54,11 +37,9 @@ fetch(apiUrl, {
       const scheduledArrival = flight.scheduled_in || "";
       const estimatedArrival = flight.estimated_in || "";
 
-      // Formatando data e hora
       const formattedSTA = formatTime(scheduledArrival);
       const formattedETA = formatTime(estimatedArrival);
 
-      // Calculando atraso em minutos (ETA - STA)
       let delayMinutes = null;
       if (scheduledArrival && estimatedArrival) {
         try {
@@ -84,21 +65,13 @@ fetch(apiUrl, {
       };
     });
 
-    // Ordena por categoria do delay conforme a ordem dos bins
     const categoryOrder = [
-      "Acima de 21",
-      "Entre 20 e 10",
-      "Entre 9 e 0",
-      "Entre -1 e -10",
-      "Entre -11 e -20",
-      "Menor de -20",
-      "Sem info"
+      "Acima de 21", "Entre 20 e 10", "Entre 9 e 0", "Entre -1 e -10", "Entre -11 e -20", "Menor de -20", "Sem info"
     ];
     flights.sort((a, b) => {
       const idxA = categoryOrder.indexOf(a.delayCategory);
       const idxB = categoryOrder.indexOf(b.delayCategory);
       if (idxA !== idxB) return idxA - idxB;
-      // Dentro do bin, ordena por delay decrescente
       return (b.delayMinutes ?? 0) - (a.delayMinutes ?? 0);
     });
 
@@ -112,7 +85,6 @@ fetch(apiUrl, {
         scheduledArrival, estimatedArrival, delayMinutes, delayCategory
       } = flight;
 
-      // Define a classe de bin para cor
       const binClass =
         delayCategory === "Acima de 21" ? "bin-acima21" :
         delayCategory === "Entre 20 e 10" ? "bin-20-10" :
@@ -122,7 +94,6 @@ fetch(apiUrl, {
         delayCategory === "Menor de -20" ? "bin-menor20" :
         "bin-seminfo";
 
-      // Adiciona o cabeçalho de grupo se a categoria mudou
       if (delayCategory !== lastCategory) {
         const headerRow = document.createElement("tr");
         headerRow.className = "delay-header";
