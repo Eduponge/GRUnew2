@@ -24,22 +24,18 @@ function formatTime(str) {
 
 document.addEventListener("DOMContentLoaded", () => {
   fetch(apiUrl)
-    .then(response => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json();
-    })
-    .then(data => {
-      console.log("Resposta da API:", data);
-      let flights = Array.isArray(data.flights) ? data.flights : [];
-      flights = flights.filter(flight => flight.direction === "inbound");
-
+    .then(response => response.json())
+    .then(apiData => {
+      // Corrigido: acessa voos em data.arrivals
+      let flights = (apiData.data && Array.isArray(apiData.data.arrivals)) ? apiData.data.arrivals : [];
+      // Não há filtro direction, pois todos são chegadas
       flights = flights.map(flight => {
         const airline = flight.operator_icao || "";
         const flightNumber = flight.ident_iata || "";
         const registration = flight.registration || "";
-        const origin = flight.origin?.ident_iata || "";
-        const scheduledArrival = flight.scheduled_in || "";
-        const estimatedArrival = flight.estimated_in || "";
+        const origin = flight.origin?.code_iata || "";
+        const scheduledArrival = flight.scheduled_in || flight.scheduled_on || "";
+        const estimatedArrival = flight.estimated_in || flight.estimated_on || "";
         const formattedSTA = formatTime(scheduledArrival);
         const formattedETA = formatTime(estimatedArrival);
 
@@ -54,6 +50,9 @@ document.addEventListener("DOMContentLoaded", () => {
           } catch {
             delayMinutes = null;
           }
+        } else if (flight.arrival_delay != null) {
+          // Usa o delay fornecido pela API caso disponível
+          delayMinutes = Math.round(flight.arrival_delay / 60);
         }
 
         return {
@@ -127,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.appendChild(row);
       });
 
-      // Se não houver voos, mostre mensagem
       if (flights.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8">Nenhum voo encontrado.</td></tr>`;
       }
