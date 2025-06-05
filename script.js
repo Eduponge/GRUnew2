@@ -11,13 +11,11 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
-// Formata o horário removendo 'T' e 'Z' e adicionando 3 horas
 function formatTime(str) {
   if (!str) return "";
   try {
     const date = new Date(str.replace("T", " ").replace("Z", ""));
     date.setHours(date.getHours() + 3);
-    // yyyy-mm-dd hh:mm
     return date.toISOString().replace("T", " ").substring(0, 16);
   } catch {
     return str;
@@ -26,9 +24,13 @@ function formatTime(str) {
 
 document.addEventListener("DOMContentLoaded", () => {
   fetch(apiUrl)
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
     .then(data => {
-      let flights = data.flights || [];
+      console.log("Resposta da API:", data);
+      let flights = Array.isArray(data.flights) ? data.flights : [];
       flights = flights.filter(flight => flight.direction === "inbound");
 
       flights = flights.map(flight => {
@@ -38,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const origin = flight.origin?.ident_iata || "";
         const scheduledArrival = flight.scheduled_in || "";
         const estimatedArrival = flight.estimated_in || "";
-
         const formattedSTA = formatTime(scheduledArrival);
         const formattedETA = formatTime(estimatedArrival);
 
@@ -68,8 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const categoryOrder = [
-        "Acima de 21", "Entre 20 e 10", "Entre 9 e 0", "Entre -1 e -10",
-        "Entre -11 e -20", "Menor de -20", "Sem info"
+        "Acima de 21", "Entre 20 e 10", "Entre 9 e 0",
+        "Entre -1 e -10", "Entre -11 e -20", "Menor de -20", "Sem info"
       ];
       flights.sort((a, b) => {
         const idxA = categoryOrder.indexOf(a.delayCategory);
@@ -125,6 +126,11 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         tbody.appendChild(row);
       });
+
+      // Se não houver voos, mostre mensagem
+      if (flights.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8">Nenhum voo encontrado.</td></tr>`;
+      }
     })
     .catch(error => {
       const tbody = document.querySelector("#flightTable tbody");
