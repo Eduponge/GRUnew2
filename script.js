@@ -11,11 +11,11 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
+// Removido o replace("Z", "")
 function formatTime(str) {
   if (!str) return "";
   try {
-    const date = new Date(str.replace("T", " ").replace("Z", ""));
-    date.setHours(date.getHours() + 3);
+    const date = new Date(str.replace("T", " "));
     return date.toISOString().replace("T", " ").substring(0, 16);
   } catch {
     return str;
@@ -26,9 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetch(apiUrl)
     .then(response => response.json())
     .then(apiData => {
-      // Corrigido: acessa voos em data.arrivals
       let flights = (apiData.data && Array.isArray(apiData.data.arrivals)) ? apiData.data.arrivals : [];
-      // Não há filtro direction, pois todos são chegadas
       flights = flights.map(flight => {
         const airline = flight.operator_icao || "";
         const flightNumber = flight.ident_iata || "";
@@ -44,14 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
             const staDate = new Date(scheduledArrival);
             const etaDate = new Date(estimatedArrival);
-            staDate.setHours(staDate.getHours() + 3);
-            etaDate.setHours(etaDate.getHours() + 3);
             delayMinutes = Math.round((etaDate - staDate) / 60000);
           } catch {
             delayMinutes = null;
           }
         } else if (flight.arrival_delay != null) {
-          // Usa o delay fornecido pela API caso disponível
           delayMinutes = Math.round(flight.arrival_delay / 60);
         }
 
