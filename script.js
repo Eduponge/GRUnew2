@@ -1,10 +1,10 @@
 const apiUrl = "https://v0-new-project-wndpayl978c.vercel.app/api/flights";
 
-// Exibe todos os voos recebidos em data.arrivals, sem filtros nem agrupamentos
+// Declara a função formatTime antes do uso
 function formatTime(str) {
   if (!str) return "";
   try {
-    const date = new Date(str); // Usa a string ISO diretamente, sem replace
+    const date = new Date(str); // Usa a string ISO diretamente
     return date.toISOString().substring(0, 16).replace("T", " ");
   } catch {
     return str;
@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const formattedSTA = formatTime(scheduledArrival);
         const formattedETA = formatTime(estimatedArrival);
 
-        // Não calcula nem exibe delay nem categoria
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${airline}</td>
