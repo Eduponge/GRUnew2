@@ -1,4 +1,4 @@
-const apiUrl = "https://v0-new-project-wndpayl978c.vercel.app/api/flights";
+const apiUrl = "https://v0-new-project-wndpayl978c.vercel.app/api/flights-complete";
 
 // Formata datas e horas com fuso +3h
 function formatTime(str) {
