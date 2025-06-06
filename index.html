@@ -3,38 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chegadas GRU - FlightAware</title>
+    <title>Chegadas GRU - FlightAware (RAW)</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Chegadas GRU (Dados via FlightAware)</h1>
-    <table id="flightTable">
-        <thead>
-            <tr>
-                <th>Companhia</th>
-                <th>Número Voo</th>
-                <th>Matrícula</th>
-                <th>Origem</th>
-                <th>STA</th>
-                <th>ETA</th>
-                <th>Status</th>
-                <th>Chegada Real</th>
-                <th>Atraso Chegada (min)</th>
-                <th>Chegada Agendada</th>
-                <th>Chegada Estimada</th>
-                <th>Terminal Destino</th>
-                <th>Gate Destino</th>
-                <th>Tipo Aeronave</th>
-                <th>Distância (km)</th>
-                <th>Cidade Origem</th>
-                <th>Cidade Destino</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Os voos serão inseridos aqui -->
-        </tbody>
-    </table>
+    <h1>Chegadas GRU (RAW FlightAware)</h1>
     <div id="msg"></div>
+    <div class="scroll-x">
+        <table id="flightTable">
+            <thead>
+                <tr id="flightTableHeader">
+                    <!-- Colunas serão preenchidas via JS -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas serão preenchidas via JS -->
+            </tbody>
+        </table>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
