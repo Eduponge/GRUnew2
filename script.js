@@ -1,53 +1,96 @@
-const apiUrl = "https://v0-new-project-wndpayl978c.vercel.app/api/flights-complete";
+const apiKey = "f7cc9bafb7216fcd501a59db4a9ca430";
+const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&arr_iata=GRU&flight_status=active`;
 
-function formatCell(value) {
-    if (value === null || value === undefined) return "";
-    if (typeof value === "object") return JSON.stringify(value);
-    return value;
+function getDelayCategory(delay) {
+  if (delay == null) return "Sem info";
+  if (delay > 21) return "Acima de 21";
+  if (delay >= 20 && delay <= 21) return "Entre 20 e 21";
+  if (delay >= 10 && delay < 20) return "Entre 10 e 19";
+  if (delay >= 0 && delay < 10) return "Entre 0 e 9";
+  if (delay >= -10 && delay < 0) return "Entre -1 e -10";
+  if (delay >= -20 && delay < -10) return "Entre -11 e -20";
+  if (delay < -20) return "Menor de -20";
+  return "Sem info";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    fetch(apiUrl)
-        .then(resp => resp.json())
-        .then(apiData => {
-            // Detecta o array de voos (ajuste conforme a estrutura recebida)
-            let flights = Array.isArray(apiData.arrivals)
-                ? apiData.arrivals
-                : (apiData.data?.arrivals || []);
-            if (!flights.length) {
-                document.getElementById("msg").textContent = "Nenhum voo encontrado.";
-                return;
-            }
-            document.getElementById("msg").textContent = `Total de voos: ${flights.length}`;
+// Ajuste para bins:
+function getDelayCategoryCustom(delay) {
+  if (delay == null) return "Sem info";
+  if (delay > 21) return "Acima de 21";
+  if (delay >= 10 && delay <= 20) return "Entre 20 e 10";
+  if (delay >= 0 && delay <= 9) return "Entre 9 e 0";
+  if (delay >= -10 && delay <= -1) return "Entre -1 e -10";
+  if (delay >= -20 && delay <= -11) return "Entre -11 e -20";
+  if (delay < -20) return "Menor de -20";
+  return "Sem info";
+}
 
-            // Coleta todos os campos presentes no primeiro voo
-            const allKeys = Array.from(
-                flights.reduce((set, f) => {
-                    Object.keys(f).forEach(k => set.add(k));
-                    return set;
-                }, new Set())
-            );
+fetch(apiUrl)
+  .then(response => response.json())
+  .then(data => {
+    let flights = data.data || [];
 
-            // Preenche o cabeçalho da tabela
-            const headerRow = document.getElementById("flightTableHeader");
-            headerRow.innerHTML = "";
-            allKeys.forEach(key => {
-                const th = document.createElement("th");
-                th.textContent = key;
-                headerRow.appendChild(th);
-            });
+    // FILTRA VOOS QUE NÃO SÃO CODESHARE
+    flights = flights.filter(flight => !flight.codeshared);
 
-            // Preenche as linhas
-            const tbody = document.querySelector("#flightTable tbody");
-            tbody.innerHTML = "";
-            flights.forEach(flight => {
-                const row = document.createElement("tr");
-                row.innerHTML = allKeys.map(key => `<td>${formatCell(flight[key])}</td>`).join("");
-                tbody.appendChild(row);
-            });
-        })
-        .catch(err => {
-            document.getElementById("msg").textContent = "Erro ao obter dados de voos.";
-            console.error(err);
-        });
-});
+    // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
+    flights = flights.map(flight => {
+      const scheduledArrival = flight.arrival?.scheduled;
+      const estimatedArrival = flight.arrival?.estimated;
+      let delayMinutes = null;
+      if (scheduledArrival && estimatedArrival) {
+        const scheduledDate = new Date(scheduledArrival);
+        const estimatedDate = new Date(estimatedArrival);
+        delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
+      }
+      return { ...flight, delayMinutes, delayCategory: getDelayCategoryCustom(delayMinutes) };
+    });
+
+    // Ordena por categoria do delay conforme a ordem dos bins
+    const categoryOrder = [
+      "Acima de 21",
+      "Entre 20 e 10",
+      "Entre 9 e 0",
+      "Entre -1 e -10",
+      "Entre -11 e -20",
+      "Menor de -20",
+      "Sem info"
+    ];
+    flights.sort((a, b) => {
+      const idxA = categoryOrder.indexOf(a.delayCategory);
+      const idxB = categoryOrder.indexOf(b.delayCategory);
+      if (idxA !== idxB) return idxA - idxB;
+      // Dentro do bin, ordena por delay decrescente
+      return (b.delayMinutes ?? 0) - (a.delayMinutes ?? 0);
+    });
+
+    const tbody = document.querySelector("#flightTable tbody");
+    tbody.innerHTML = "";
+
+    flights.forEach(flight => {
+      const airline = flight.airline?.name || "";
+      const flightNumber = flight.flight?.number || "";
+      const origin = flight.departure?.iata || "";
+      const scheduledArrival = flight.arrival?.scheduled || "";
+      const estimatedArrival = flight.arrival?.estimated || "";
+      const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
+      const delayCategory = flight.delayCategory;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${airline}</td>
+        <td>${flightNumber}</td>
+        <td>${origin}</td>
+        <td>${scheduledArrival}</td>
+        <td>${estimatedArrival}</td>
+        <td>${delay}</td>
+        <td>${delayCategory}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  })
+  .catch(error => {
+    const tbody = document.querySelector("#flightTable tbody");
+    tbody.innerHTML = `<tr><td colspan="7">Erro ao obter dados: ${error}</td></tr>`;
+    console.error("Error fetching flight data:", error);
+  });
