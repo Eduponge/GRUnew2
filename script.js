@@ -16,7 +16,6 @@ function formatDate(dateStr) {
   if (!dateStr) return "";
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return "";
-  // Formato: dd/MM/yyyy HH:mm
   return date.toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -31,8 +30,8 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // FILTRA SOMENTE VOOS ONDE codeshared NÃO EXISTE, É undefined ou null
-    flights = flights.filter(flight => flight.codeshared == null);
+    // Apenas voos onde codeshared === null
+    flights = flights.filter(flight => flight.codeshared === null);
 
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
