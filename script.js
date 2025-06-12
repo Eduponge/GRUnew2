@@ -1,39 +1,64 @@
 const apiKey = "f7cc9bafb7216fcd501a59db4a9ca430";
 const apiUrl = `https://api.aviationstack.com/v1/flights?access_key=${apiKey}&arr_iata=GRU&flight_status=active`;
 
-function getDelayCategory(delay) {
-  if (delay == null) return "Sem info";
-  if (delay > 21) return "Acima de 21";
-  if (delay >= 20 && delay <= 21) return "Entre 20 e 21";
-  if (delay >= 10 && delay < 20) return "Entre 10 e 19";
-  if (delay >= 0 && delay < 10) return "Entre 0 e 9";
-  if (delay >= -10 && delay < 0) return "Entre -1 e -10";
-  if (delay >= -20 && delay < -10) return "Entre -11 e -20";
-  if (delay < -20) return "Menor de -20";
-  return "Sem info";
-}
+// Mapeamento dos bins para classe, label e ordem
+const delayBins = [
+  {
+    key: "bin-acima21",
+    label: "Acima de 21 min",
+    sort: 0,
+    match: (delay) => delay != null && delay > 21
+  },
+  {
+    key: "bin-20-10",
+    label: "Entre 20 e 10 min",
+    sort: 1,
+    match: (delay) => delay != null && delay >= 10 && delay <= 21
+  },
+  {
+    key: "bin-9-0",
+    label: "Entre 9 e 0 min",
+    sort: 2,
+    match: (delay) => delay != null && delay >= 0 && delay <= 9
+  },
+  {
+    key: "bin--1--10",
+    label: "Entre -1 e -10 min",
+    sort: 3,
+    match: (delay) => delay != null && delay >= -10 && delay <= -1
+  },
+  {
+    key: "bin--11--20",
+    label: "Entre -11 e -20 min",
+    sort: 4,
+    match: (delay) => delay != null && delay >= -20 && delay <= -11
+  },
+  {
+    key: "bin-menor20",
+    label: "Menor de -20 min",
+    sort: 5,
+    match: (delay) => delay != null && delay < -20
+  },
+  {
+    key: "bin-seminfo",
+    label: "Sem info",
+    sort: 6,
+    match: (delay) => delay == null
+  },
+];
 
-// Ajuste para bins:
-function getDelayCategoryCustom(delay) {
-  if (delay == null) return "Sem info";
-  if (delay > 21) return "Acima de 21";
-  if (delay >= 10 && delay <= 20) return "Entre 20 e 10";
-  if (delay >= 0 && delay <= 9) return "Entre 9 e 0";
-  if (delay >= -10 && delay <= -1) return "Entre -1 e -10";
-  if (delay >= -20 && delay <= -11) return "Entre -11 e -20";
-  if (delay < -20) return "Menor de -20";
-  return "Sem info";
+// Função para determinar bin
+function getDelayBin(delay) {
+  return delayBins.find(bin => bin.match(delay)) || delayBins[delayBins.length - 1];
 }
 
 fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-
-    // FILTRA VOOS QUE NÃO SÃO CODESHARE
     flights = flights.filter(flight => !flight.codeshared);
 
-    // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
+    // Calcula delay e bin para cada voo
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
@@ -43,50 +68,56 @@ fetch(apiUrl)
         const estimatedDate = new Date(estimatedArrival);
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
       }
-      return { ...flight, delayMinutes, delayCategory: getDelayCategoryCustom(delayMinutes) };
+      const bin = getDelayBin(delayMinutes);
+      return { ...flight, delayMinutes, delayBin: bin.key, delayLabel: bin.label, delaySort: bin.sort };
     });
 
-    // Ordena por categoria do delay conforme a ordem dos bins
-    const categoryOrder = [
-      "Acima de 21",
-      "Entre 20 e 10",
-      "Entre 9 e 0",
-      "Entre -1 e -10",
-      "Entre -11 e -20",
-      "Menor de -20",
-      "Sem info"
-    ];
-    flights.sort((a, b) => {
-      const idxA = categoryOrder.indexOf(a.delayCategory);
-      const idxB = categoryOrder.indexOf(b.delayCategory);
-      if (idxA !== idxB) return idxA - idxB;
-      // Dentro do bin, ordena por delay decrescente
-      return (b.delayMinutes ?? 0) - (a.delayMinutes ?? 0);
+    // Agrupa voos por bin
+    const grouped = {};
+    delayBins.forEach(bin => grouped[bin.key] = []);
+    flights.forEach(flight => {
+      grouped[flight.delayBin].push(flight);
     });
 
     const tbody = document.querySelector("#flightTable tbody");
     tbody.innerHTML = "";
 
-    flights.forEach(flight => {
-      const airline = flight.airline?.name || "";
-      const flightNumber = flight.flight?.number || "";
-      const origin = flight.departure?.iata || "";
-      const scheduledArrival = flight.arrival?.scheduled || "";
-      const estimatedArrival = flight.arrival?.estimated || "";
-      const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
-      const delayCategory = flight.delayCategory;
+    // Para cada bin, se houver voos, mostra header e voos
+    delayBins.forEach(bin => {
+      const flightsBin = grouped[bin.key];
+      if (flightsBin.length > 0) {
+        // Header da categoria
+        const headerRow = document.createElement("tr");
+        headerRow.className = "category-row";
+        const headerCell = document.createElement("td");
+        headerCell.colSpan = 7;
+        headerCell.textContent = bin.label;
+        headerRow.appendChild(headerCell);
+        tbody.appendChild(headerRow);
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${airline}</td>
-        <td>${flightNumber}</td>
-        <td>${origin}</td>
-        <td>${scheduledArrival}</td>
-        <td>${estimatedArrival}</td>
-        <td>${delay}</td>
-        <td>${delayCategory}</td>
-      `;
-      tbody.appendChild(row);
+        flightsBin.forEach(flight => {
+          const airline = flight.airline?.name || "";
+          const flightNumber = flight.flight?.number || "";
+          const origin = flight.departure?.iata || "";
+          const scheduledArrival = flight.arrival?.scheduled ? new Date(flight.arrival.scheduled).toLocaleString("pt-BR") : "";
+          const estimatedArrival = flight.arrival?.estimated ? new Date(flight.arrival.estimated).toLocaleString("pt-BR") : "";
+          const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
+          const delayLabel = flight.delayLabel;
+          const delayBinClass = flight.delayBin;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="delay-category ${delayBinClass}">${delayLabel}</td>
+            <td>${airline}</td>
+            <td>${flightNumber}</td>
+            <td>${origin}</td>
+            <td>${scheduledArrival}</td>
+            <td>${estimatedArrival}</td>
+            <td>${delay}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
     });
   })
   .catch(error => {
