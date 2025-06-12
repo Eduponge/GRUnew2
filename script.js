@@ -30,7 +30,7 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // Somente voos onde codeshared é um campo presente e null
+    // Filtra apenas voos onde codeshared está presente e é null
     flights = flights.filter(flight => Object.prototype.hasOwnProperty.call(flight, 'codeshared') && flight.codeshared === null);
 
     flights = flights.map(flight => {
@@ -71,6 +71,11 @@ fetch(apiUrl)
 
     const tbody = document.querySelector("#flightTable tbody");
     tbody.innerHTML = "";
+
+    if (flights.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7">Nenhum voo encontrado com codeshared === null</td></tr>`;
+      return;
+    }
 
     flights.forEach(flight => {
       const delayCategory = flight.delayCategory;
