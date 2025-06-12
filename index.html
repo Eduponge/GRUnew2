@@ -4,38 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Delays</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Flight Delays Overview</h1>
-    <table id="flightTable" border="1">
-        <thead>
-            <tr>
-                <th>Delay Category</th>
-                <th>Airline</th>
-                <th>Flight Number</th>
-                <th>Origin</th>
-                <th>Scheduled Arrival</th>
-                <th>Estimated Arrival</th>
-                <th>Delay (min)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dados vão aparecer aqui -->
-        </tbody>
-    </table>
-    <div class="legend">
-        <h2>Legenda das Categorias de Atraso</h2>
-        <ul>
-            <li><span class="bin bin-acima21"></span> Acima de 21 min</li>
-            <li><span class="bin bin-20-10"></span> Entre 20 e 10 min</li>
-            <li><span class="bin bin-9-0"></span> Entre 9 e 0 min</li>
-            <li><span class="bin bin--1--10"></span> Entre -1 e -10 min</li>
-            <li><span class="bin bin--11--20"></span> Entre -11 e -20 min</li>
-            <li><span class="bin bin-menor20"></span> Menor de -20 min</li>
-            <li><span class="bin bin-seminfo"></span> Sem info</li>
-        </ul>
-    </div>
-    <script src="script.js"></script>
+    <main>
+        <h1>Flight Delays Overview</h1>
+        <div class="table-container">
+            <table id="flightTable">
+                <thead>
+                    <tr>
+                        <th>Delay Category</th>
+                        <th>Airline</th>
+                        <th>Flight Number</th>
+                        <th>Origin</th>
+                        <th>Scheduled Arrival</th>
+                        <th>Estimated Arrival</th>
+                        <th>Delay (min)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="delay-category bin-acima21">Acima de 21 min</td>
+                        <td>LATAM</td>
+                        <td>1234</td>
+                        <td>GRU</td>
+                        <td>14:20</td>
+                        <td>14:45</td>
+                        <td>25</td>
+                    </tr>
+                    <tr>
+                        <td class="delay-category bin-20-10">Entre 20 e 10 min</td>
+                        <td>Azul</td>
+                        <td>5678</td>
+                        <td>CGH</td>
+                        <td>15:10</td>
+                        <td>15:25</td>
+                        <td>12</td>
+                    </tr>
+                    <tr>
+                        <td class="delay-category bin-9-0">Entre 9 e 0 min</td>
+                        <td>Gol</td>
+                        <td>9101</td>
+                        <td>SDU</td>
+                        <td>16:00</td>
+                        <td>16:07</td>
+                        <td>7</td>
+                    </tr>
+                    <tr>
+                        <td class="delay-category bin--1--10">Entre -1 e -10 min</td>
+                        <td>LATAM</td>
+                        <td>3344</td>
+                        <td>VCP</td>
+                        <td>17:20</td>
+                        <td>17:15</td>
+                        <td>-5</td>
+                    </tr>
+                    <tr>
+                        <td class="delay-category bin--11--20">Entre -11 e -20 min</td>
+                        <td>Azul</td>
+                        <td>5566</td>
+                        <td>CNF</td>
+                        <td>18:40</td>
+                        <td>18:25</td>
+                        <td>-15</td>
+                    </tr>
+                    <tr>
+                        <td class="delay-category bin-menor20">Menor de -20 min</td>
+                        <td>Gol</td>
+                        <td>7889</td>
+                        <td>POA</td>
+                        <td>19:55</td>
+                        <td>19:25</td>
+                        <td>-30</td>
+                    </tr>
+                    <tr>
+                        <td class="delay-category bin-seminfo">Sem info</td>
+                        <td>LATAM</td>
+                        <td>1122</td>
+                        <td>BSB</td>
+                        <td>20:30</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <section class="legend">
+            <h2>Legenda das Categorias de Atraso</h2>
+            <ul>
+                <li><span class="bin bin-acima21"></span> Acima de 21 min</li>
+                <li><span class="bin bin-20-10"></span> Entre 20 e 10 min</li>
+                <li><span class="bin bin-9-0"></span> Entre 9 e 0 min</li>
+                <li><span class="bin bin--1--10"></span> Entre -1 e -10 min</li>
+                <li><span class="bin bin--11--20"></span> Entre -11 e -20 min</li>
+                <li><span class="bin bin-menor20"></span> Menor de -20 min</li>
+                <li><span class="bin bin-seminfo"></span> Sem info</li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <small>&copy; 2025 Flight Delays - GRUnew2</small>
+    </footer>
 </body>
 </html>
