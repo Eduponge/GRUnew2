@@ -12,27 +12,27 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "";
-  return date.toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  });
+// Função para obter a classe da cor do delay (de acordo com o CSS já existente)
+function getDelayBinClass(delay) {
+  if (delay == null) return "bin-seminfo";
+  if (delay > 21) return "bin-acima21";
+  if (delay >= 10 && delay <= 20) return "bin-20-10";
+  if (delay >= 0 && delay <= 9) return "bin-9-0";
+  if (delay >= -10 && delay <= -1) return "bin--1--10";
+  if (delay >= -20 && delay <= -11) return "bin--11--20";
+  if (delay < -20) return "bin-menor20";
+  return "bin-seminfo";
 }
 
 fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // Exibe apenas voos NÃO compartilhados (codeshared ausente, undefined ou null)
+
+    // FILTRA VOOS QUE NÃO SÃO CODESHARE
     flights = flights.filter(flight => !flight.codeshared);
 
+    // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
@@ -42,17 +42,10 @@ fetch(apiUrl)
         const estimatedDate = new Date(estimatedArrival);
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
       }
-      const estimatedDisplay = estimatedArrival ? formatDate(estimatedArrival) : "Sem informação";
-      const scheduledDisplay = scheduledArrival ? formatDate(scheduledArrival) : "";
-      return { 
-        ...flight, 
-        delayMinutes, 
-        delayCategory: getDelayCategoryCustom(delayMinutes),
-        estimatedDisplay,
-        scheduledDisplay
-      };
+      return { ...flight, delayMinutes, delayCategory: getDelayCategoryCustom(delayMinutes) };
     });
 
+    // Ordena por categoria do delay conforme a ordem dos bins
     const categoryOrder = [
       "Acima de 21",
       "Entre 20 e 10",
@@ -66,35 +59,33 @@ fetch(apiUrl)
       const idxA = categoryOrder.indexOf(a.delayCategory);
       const idxB = categoryOrder.indexOf(b.delayCategory);
       if (idxA !== idxB) return idxA - idxB;
+      // Dentro do bin, ordena por delay decrescente
       return (b.delayMinutes ?? 0) - (a.delayMinutes ?? 0);
     });
 
     const tbody = document.querySelector("#flightTable tbody");
     tbody.innerHTML = "";
 
-    if (flights.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7">Nenhum voo não compartilhado encontrado</td></tr>`;
-      return;
-    }
-
     flights.forEach(flight => {
-      const delayCategory = flight.delayCategory;
       const airline = flight.airline?.name || "";
       const flightNumber = flight.flight?.number || "";
       const origin = flight.departure?.iata || "";
-      const scheduledArrival = flight.scheduledDisplay;
-      const estimatedArrival = flight.estimatedDisplay;
+      const scheduledArrival = flight.arrival?.scheduled || "";
+      const estimatedArrival = flight.arrival?.estimated || "";
       const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
+      const delayCategory = flight.delayCategory;
+      const delayBinClass = getDelayBinClass(flight.delayMinutes);
 
       const row = document.createElement("tr");
+      // Adiciona classe de cor no td do delay
       row.innerHTML = `
-        <td>${delayCategory}</td>
+        <td class="delay-category">${delayCategory}</td>
         <td>${airline}</td>
         <td>${flightNumber}</td>
         <td>${origin}</td>
         <td>${scheduledArrival}</td>
         <td>${estimatedArrival}</td>
-        <td>${delay}</td>
+        <td class="delay-value ${delayBinClass}" style="text-align:center; font-weight:bold;">${delay}</td>
       `;
       tbody.appendChild(row);
     });
