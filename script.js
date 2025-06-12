@@ -30,8 +30,8 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // Apenas voos onde codeshared === null
-    flights = flights.filter(flight => flight.codeshared === null);
+    // Somente voos onde codeshared é um campo presente e null
+    flights = flights.filter(flight => Object.prototype.hasOwnProperty.call(flight, 'codeshared') && flight.codeshared === null);
 
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
