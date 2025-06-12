@@ -31,8 +31,8 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // FILTRA VOOS QUE NÃO SÃO CODESHARE
-    flights = flights.filter(flight => !flight.codeshared);
+    // FILTRA SOMENTE VOOS ONDE codeshared É null
+    flights = flights.filter(flight => flight.codeshared === null);
 
     // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
     flights = flights.map(flight => {
