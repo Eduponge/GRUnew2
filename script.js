@@ -30,8 +30,8 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // Filtra apenas voos onde codeshared está presente e é null
-    flights = flights.filter(flight => Object.prototype.hasOwnProperty.call(flight, 'codeshared') && flight.codeshared === null);
+    // Exibe apenas voos NÃO compartilhados (codeshared ausente, undefined ou null)
+    flights = flights.filter(flight => !flight.codeshared);
 
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
@@ -73,7 +73,7 @@ fetch(apiUrl)
     tbody.innerHTML = "";
 
     if (flights.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7">Nenhum voo encontrado com codeshared === null</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7">Nenhum voo não compartilhado encontrado</td></tr>`;
       return;
     }
 
