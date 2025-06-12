@@ -12,35 +12,44 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+}
+
 fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-
-    // FILTRA VOOS QUE NÃO SÃO CODESHARE
+    // Exibe apenas voos NÃO compartilhados (codeshared ausente, undefined ou null)
     flights = flights.filter(flight => !flight.codeshared);
 
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
       let delayMinutes = null;
-      let estimatedDisplay = estimatedArrival;
-
       if (scheduledArrival && estimatedArrival) {
         const scheduledDate = new Date(scheduledArrival);
         const estimatedDate = new Date(estimatedArrival);
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
       }
-      
-      if (!estimatedArrival) {
-        estimatedDisplay = "Sem informação";
-      }
-
+      const estimatedDisplay = estimatedArrival ? formatDate(estimatedArrival) : "Sem informação";
+      const scheduledDisplay = scheduledArrival ? formatDate(scheduledArrival) : "";
       return { 
         ...flight, 
         delayMinutes, 
         delayCategory: getDelayCategoryCustom(delayMinutes),
-        estimatedDisplay
+        estimatedDisplay,
+        scheduledDisplay
       };
     });
 
@@ -63,14 +72,19 @@ fetch(apiUrl)
     const tbody = document.querySelector("#flightTable tbody");
     tbody.innerHTML = "";
 
+    if (flights.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7">Nenhum voo não compartilhado encontrado</td></tr>`;
+      return;
+    }
+
     flights.forEach(flight => {
+      const delayCategory = flight.delayCategory;
       const airline = flight.airline?.name || "";
       const flightNumber = flight.flight?.number || "";
       const origin = flight.departure?.iata || "";
-      const scheduledArrival = flight.arrival?.scheduled || "";
-      const estimatedArrival = flight.estimatedDisplay !== undefined ? flight.estimatedDisplay : (flight.arrival?.estimated || "");
+      const scheduledArrival = flight.scheduledDisplay;
+      const estimatedArrival = flight.estimatedDisplay;
       const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
-      const delayCategory = flight.delayCategory;
 
       const row = document.createElement("tr");
       row.innerHTML = `
