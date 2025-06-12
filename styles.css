@@ -96,12 +96,10 @@ td.delay-category {
     font-weight: bold;
     text-align: center;
     transition: background 0.2s, color 0.2s;
-    /* Garante que a cor da célula sempre prevaleça sobre o zebra-striping */
     position: relative;
     z-index: 1;
 }
 
-/* Cores para cada categoria */
 td.delay-category.bin-acima21 { background-color: var(--bin-acima21); color: #fff; }
 td.delay-category.bin-20-10 { background-color: var(--bin-20-10); color: #333; }
 td.delay-category.bin-9-0 { background-color: var(--bin-9-0); color: #333; }
@@ -110,11 +108,13 @@ td.delay-category.bin--11--20 { background-color: var(--bin--11--20); color: #ff
 td.delay-category.bin-menor20 { background-color: var(--bin-menor20); color: #fff; }
 td.delay-category.bin-seminfo { background-color: var(--bin-seminfo); color: #333; }
 
-tr.delay-header td {
-    background: #e0e0e0;
+tr.category-row td {
+    background: #ececec;
+    color: #333;
     font-weight: bold;
-    text-align: center;
-    font-size: 1.08em;
+    text-align: left;
+    font-size: 1.07em;
+    padding: 8px 16px;
 }
 
 .legend {
