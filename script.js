@@ -12,6 +12,21 @@ function getDelayCategoryCustom(delay) {
   return "Sem info";
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  // Formato: dd/MM/yyyy HH:mm
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  });
+}
+
 fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
@@ -25,21 +40,23 @@ fetch(apiUrl)
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
       let delayMinutes = null;
-      let estimatedDisplay = estimatedArrival;
 
       if (scheduledArrival && estimatedArrival) {
         const scheduledDate = new Date(scheduledArrival);
         const estimatedDate = new Date(estimatedArrival);
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
-      } else if (!estimatedArrival) {
-        estimatedDisplay = "Sem informação";
       }
+
+      // Se estimatedArrival for null ou vazio, mostre "Sem informação"
+      const estimatedDisplay = estimatedArrival ? formatDate(estimatedArrival) : "Sem informação";
+      const scheduledDisplay = scheduledArrival ? formatDate(scheduledArrival) : "";
 
       return { 
         ...flight, 
         delayMinutes, 
         delayCategory: getDelayCategoryCustom(delayMinutes),
-        estimatedDisplay
+        estimatedDisplay,
+        scheduledDisplay
       };
     });
 
@@ -68,20 +85,20 @@ fetch(apiUrl)
       const airline = flight.airline?.name || "";
       const flightNumber = flight.flight?.number || "";
       const origin = flight.departure?.iata || "";
-      const scheduledArrival = flight.arrival?.scheduled || "";
-      const estimatedArrival = flight.estimatedDisplay !== undefined ? flight.estimatedDisplay : (flight.arrival?.estimated || "");
+      const scheduledArrival = flight.scheduledDisplay;
+      const estimatedArrival = flight.estimatedDisplay;
       const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
       const delayCategory = flight.delayCategory;
 
       const row = document.createElement("tr");
       row.innerHTML = `
+        <td>${delayCategory}</td>
         <td>${airline}</td>
         <td>${flightNumber}</td>
         <td>${origin}</td>
         <td>${scheduledArrival}</td>
         <td>${estimatedArrival}</td>
         <td>${delay}</td>
-        <td>${delayCategory}</td>
       `;
       tbody.appendChild(row);
     });
