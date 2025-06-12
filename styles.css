@@ -95,18 +95,20 @@ tr:hover td {
 td.delay-category {
     font-weight: bold;
     text-align: center;
-    /* Transição suave para cor */
     transition: background 0.2s, color 0.2s;
+    /* Garante que a cor da célula sempre prevaleça sobre o zebra-striping */
+    position: relative;
+    z-index: 1;
 }
 
-/* Cores unificadas para tabela e legenda (sempre use ambas as classes) */
-td.delay-category.bin-acima21, .legend .bin-acima21 { background-color: var(--bin-acima21) !important; color: #fff; }
-td.delay-category.bin-20-10,   .legend .bin-20-10   { background-color: var(--bin-20-10) !important; color: #333; }
-td.delay-category.bin-9-0,     .legend .bin-9-0     { background-color: var(--bin-9-0) !important; color: #333; }
-td.delay-category.bin--1--10,  .legend .bin--1--10  { background-color: var(--bin--1--10) !important; color: #333; }
-td.delay-category.bin--11--20, .legend .bin--11--20 { background-color: var(--bin--11--20) !important; color: #fff; }
-td.delay-category.bin-menor20, .legend .bin-menor20 { background-color: var(--bin-menor20) !important; color: #fff; }
-td.delay-category.bin-seminfo, .legend .bin-seminfo { background-color: var(--bin-seminfo) !important; color: #333; }
+/* Cores para cada categoria */
+td.delay-category.bin-acima21 { background-color: var(--bin-acima21); color: #fff; }
+td.delay-category.bin-20-10 { background-color: var(--bin-20-10); color: #333; }
+td.delay-category.bin-9-0 { background-color: var(--bin-9-0); color: #333; }
+td.delay-category.bin--1--10 { background-color: var(--bin--1--10); color: #333; }
+td.delay-category.bin--11--20 { background-color: var(--bin--11--20); color: #fff; }
+td.delay-category.bin-menor20 { background-color: var(--bin-menor20); color: #fff; }
+td.delay-category.bin-seminfo { background-color: var(--bin-seminfo); color: #333; }
 
 tr.delay-header td {
     background: #e0e0e0;
@@ -156,6 +158,13 @@ tr.delay-header td {
     border: 1px solid #ccc;
     box-shadow: 0 1px 3px rgba(0,0,0,0.07);
 }
+.legend .bin-acima21 { background-color: var(--bin-acima21); }
+.legend .bin-20-10 { background-color: var(--bin-20-10); }
+.legend .bin-9-0 { background-color: var(--bin-9-0); }
+.legend .bin--1--10 { background-color: var(--bin--1--10); }
+.legend .bin--11--20 { background-color: var(--bin--11--20); }
+.legend .bin-menor20 { background-color: var(--bin-menor20); }
+.legend .bin-seminfo { background-color: var(--bin-seminfo); }
 
 footer {
     text-align: center;
