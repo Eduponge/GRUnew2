@@ -31,7 +31,6 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-
     // FILTRA VOOS QUE NÃO SÃO CODESHARE
     flights = flights.filter(flight => !flight.codeshared);
 
@@ -40,17 +39,14 @@ fetch(apiUrl)
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
       let delayMinutes = null;
-
       if (scheduledArrival && estimatedArrival) {
         const scheduledDate = new Date(scheduledArrival);
         const estimatedDate = new Date(estimatedArrival);
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
       }
-
-      // Se estimatedArrival for null ou vazio, mostre "Sem informação"
+      // Se não houver estimatedArrival, mostrar "Sem informação"
       const estimatedDisplay = estimatedArrival ? formatDate(estimatedArrival) : "Sem informação";
       const scheduledDisplay = scheduledArrival ? formatDate(scheduledArrival) : "";
-
       return { 
         ...flight, 
         delayMinutes, 
@@ -82,13 +78,13 @@ fetch(apiUrl)
     tbody.innerHTML = "";
 
     flights.forEach(flight => {
+      const delayCategory = flight.delayCategory;
       const airline = flight.airline?.name || "";
       const flightNumber = flight.flight?.number || "";
       const origin = flight.departure?.iata || "";
       const scheduledArrival = flight.scheduledDisplay;
       const estimatedArrival = flight.estimatedDisplay;
       const delay = flight.delayMinutes != null ? flight.delayMinutes : "";
-      const delayCategory = flight.delayCategory;
 
       const row = document.createElement("tr");
       row.innerHTML = `
