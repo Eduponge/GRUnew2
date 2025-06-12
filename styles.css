@@ -47,15 +47,6 @@ tr.delay-header td {
     font-size: 1.1em;
 }
 
-/* Escala de cor para a coluna Delay (min) */
-td.delay-value.bin-acima21 { background-color: #e57373; color: #fff; }
-td.delay-value.bin-20-10 { background-color: #ffb74d; color: #333; }
-td.delay-value.bin-9-0 { background-color: #fff176; color: #333; }
-td.delay-value.bin--1--10 { background-color: #aed581; color: #333; }
-td.delay-value.bin--11--20 { background-color: #4fc3f7; color: #fff; }
-td.delay-value.bin-menor20 { background-color: #9575cd; color: #fff; }
-td.delay-value.bin-seminfo { background-color: #bdbdbd; color: #333; }
-
 .legend {
     margin-top: 30px;
     max-width: 400px;
