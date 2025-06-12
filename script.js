@@ -31,10 +31,9 @@ fetch(apiUrl)
   .then(response => response.json())
   .then(data => {
     let flights = data.data || [];
-    // FILTRA SOMENTE VOOS ONDE codeshared É null
-    flights = flights.filter(flight => flight.codeshared === null);
+    // FILTRA SOMENTE VOOS ONDE codeshared NÃO EXISTE, É undefined ou null
+    flights = flights.filter(flight => flight.codeshared == null);
 
-    // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
     flights = flights.map(flight => {
       const scheduledArrival = flight.arrival?.scheduled;
       const estimatedArrival = flight.arrival?.estimated;
@@ -44,7 +43,6 @@ fetch(apiUrl)
         const estimatedDate = new Date(estimatedArrival);
         delayMinutes = Math.round((estimatedDate - scheduledDate) / 60000);
       }
-      // Se não houver estimatedArrival, mostrar "Sem informação"
       const estimatedDisplay = estimatedArrival ? formatDate(estimatedArrival) : "Sem informação";
       const scheduledDisplay = scheduledArrival ? formatDate(scheduledArrival) : "";
       return { 
@@ -56,7 +54,6 @@ fetch(apiUrl)
       };
     });
 
-    // Ordena por categoria do delay conforme a ordem dos bins
     const categoryOrder = [
       "Acima de 21",
       "Entre 20 e 10",
@@ -70,7 +67,6 @@ fetch(apiUrl)
       const idxA = categoryOrder.indexOf(a.delayCategory);
       const idxB = categoryOrder.indexOf(b.delayCategory);
       if (idxA !== idxB) return idxA - idxB;
-      // Dentro do bin, ordena por delay decrescente
       return (b.delayMinutes ?? 0) - (a.delayMinutes ?? 0);
     });
 
