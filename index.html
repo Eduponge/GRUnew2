@@ -4,45 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Delays</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main>
-        <h1>Flight Delays Overview</h1>
-        <div class="table-container">
-            <table id="flightTable">
-                <thead>
-                    <tr>
-                        <th>Delay Category</th>
-                        <th>Airline</th>
-                        <th>Flight Number</th>
-                        <th>Origin</th>
-                        <th>Scheduled Arrival</th>
-                        <th>Estimated Arrival</th>
-                        <th>Delay (min)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Conteúdo dinâmico via script.js -->
-                </tbody>
-            </table>
-        </div>
-        <section class="legend">
-            <h2>Legenda das Categorias de Atraso</h2>
-            <ul>
-                <li><span class="bin bin-acima21"></span> Acima de 21 min</li>
-                <li><span class="bin bin-20-10"></span> Entre 20 e 10 min</li>
-                <li><span class="bin bin-9-0"></span> Entre 9 e 0 min</li>
-                <li><span class="bin bin--1--10"></span> Entre -1 e -10 min</li>
-                <li><span class="bin bin--11--20"></span> Entre -11 e -20 min</li>
-                <li><span class="bin bin-menor20"></span> Menor de -20 min</li>
-                <li><span class="bin bin-seminfo"></span> Sem info</li>
-            </ul>
-        </section>
-    </main>
-    <footer>
-        <small>&copy; 2025 Flight Delays - GRUnew2</small>
-    </footer>
+    <h1>Flight Delays Overview</h1>
+    <table id="flightTable" border="1">
+        <thead>
+            <tr>
+                <th>Delay Category</th>
+                <th>Airline</th>
+                <th>Flight Number</th>
+                <th>Origin</th>
+                <th>Scheduled Arrival</th>
+                <th>Estimated Arrival</th>
+                <th>Delay (min)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dados vão aparecer aqui -->
+        </tbody>
+    </table>
+    <div class="legend">
+        <h2>Legenda das Categorias de Atraso</h2>
+        <ul>
+            <li><span class="bin bin-acima21"></span> Acima de 21 min</li>
+            <li><span class="bin bin-20-10"></span> Entre 20 e 10 min</li>
+            <li><span class="bin bin-9-0"></span> Entre 9 e 0 min</li>
+            <li><span class="bin bin--1--10"></span> Entre -1 e -10 min</li>
+            <li><span class="bin bin--11--20"></span> Entre -11 e -20 min</li>
+            <li><span class="bin bin-menor20"></span> Menor de -20 min</li>
+            <li><span class="bin bin-seminfo"></span> Sem info</li>
+        </ul>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
