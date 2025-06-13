@@ -6,8 +6,8 @@ fetch(apiUrl)
   .then(data => {
     let flights = data.data || [];
 
-    // Nova condição: só exibe voos que NÃO possuem a propriedade codeshared (ou seja, não aparece se tiver codeshared)
-    flights = flights.filter(flight => !('codeshared' in (flight.flight || {})));
+    // Exibe apenas voos que NÃO têm o campo 'codeshared' (ou seja, codeshared null ou undefined)
+    flights = flights.filter(flight => !flight.flight?.codeshared);
 
     // Calcula o delay (em minutos) como a diferença entre estimatedArrival e scheduledArrival
     flights = flights.map(flight => {
